@@ -1,0 +1,191 @@
+# =============================================================================
+# Lakehouse FSI - Credit Decisioning
+# =============================================================================
+# Pipeline SDP (serverless, photon, advanced) + 2 Jobs
+# Tables: catalog.fsi_credit.*
+# =============================================================================
+
+resources:
+  pipelines:
+    credit_pipeline:
+      name: "[FSI Demo Pack] SDP - Credit Decisioning"
+      development: true
+      photon: true
+      serverless: true
+      edition: ADVANCED
+      channel: CURRENT
+      catalog: ${var.catalog}
+      schema: ${var.credit_schema}
+      configuration:
+        bundle.catalog: ${var.catalog}
+        bundle.schema: ${var.credit_schema}
+        bundle.volume: ${var.credit_volume}
+      libraries:
+        - notebook:
+            path: ../lakehouse-fsi-credit/01-Data-Ingestion/01.1-sdp-sql/transformations
+
+  jobs:
+    # -------------------------------------------------------------------------
+    # Main job: uses ML cluster for most tasks, serverless for AutoML
+    # -------------------------------------------------------------------------
+    credit_job:
+      name: "[FSI Demo Pack] Credit Decisioning - Full Pipeline"
+      max_concurrent_runs: 1
+      tasks:
+        - task_key: init_data
+          existing_cluster_id: ${var.ml_cluster_id}
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/_resources/01-load-data
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+
+        - task_key: start_sdp_pipeline
+          depends_on:
+            - task_key: init_data
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.credit_pipeline.id}
+            full_refresh: false
+
+        - task_key: feature_engineering
+          depends_on:
+            - task_key: start_sdp_pipeline
+          existing_cluster_id: ${var.ml_cluster_id}
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.1-Feature-Engineering-credit-decisioning
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+
+        - task_key: automl_model
+          depends_on:
+            - task_key: feature_engineering
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.2-AutoML-credit-decisioning
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+          environment_key: serverless_env
+
+        - task_key: batch_scoring
+          depends_on:
+            - task_key: automl_model
+          existing_cluster_id: ${var.ml_cluster_id}
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.3-Batch-Scoring-credit-decisioning
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+
+        - task_key: explainability_and_fairness
+          depends_on:
+            - task_key: batch_scoring
+          existing_cluster_id: ${var.ml_cluster_id}
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.5-Explainability-and-Fairness-credit-decisioning
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+
+        - task_key: real_time_serving
+          depends_on:
+            - task_key: automl_model
+          existing_cluster_id: ${var.ml_cluster_id}
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.5-Explainability-and-Fairness-credit-decisioning
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+
+      environments:
+        - environment_key: serverless_env
+          spec:
+            environment_version: "5"
+
+      permissions:
+        - level: CAN_MANAGE_RUN
+          group_name: users
+
+    # -------------------------------------------------------------------------
+    # Init job: all serverless except batch_scoring (needs ML cluster)
+    # -------------------------------------------------------------------------
+    credit_init_job:
+      name: "[FSI Demo Pack] Credit Decisioning - Init"
+      max_concurrent_runs: 1
+      tasks:
+        - task_key: init_data
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/_resources/00-setup
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+              reset_all_data: "false"
+
+        - task_key: start_sdp_pipeline
+          depends_on:
+            - task_key: init_data
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.credit_pipeline.id}
+            full_refresh: false
+
+        - task_key: feature_engineering
+          depends_on:
+            - task_key: start_sdp_pipeline
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.1-Feature-Engineering-credit-decisioning
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+
+        - task_key: automl_model
+          depends_on:
+            - task_key: feature_engineering
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.2-AutoML-credit-decisioning
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+
+        - task_key: batch_scoring
+          depends_on:
+            - task_key: automl_model
+          existing_cluster_id: ${var.ml_cluster_id}
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.3-Batch-Scoring-credit-decisioning
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+
+        - task_key: explainability_and_fairness
+          depends_on:
+            - task_key: batch_scoring
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.5-Explainability-and-Fairness-credit-decisioning
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+
+        - task_key: create_ai_functions
+          depends_on:
+            - task_key: explainability_and_fairness
+          notebook_task:
+            notebook_path: ../lakehouse-fsi-credit/05-Generative-AI/05.1-AI-Functions-Creation
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.credit_schema}
+              volume_name: ${var.credit_volume}
+
+      permissions:
+        - level: CAN_MANAGE_RUN
+          group_name: users

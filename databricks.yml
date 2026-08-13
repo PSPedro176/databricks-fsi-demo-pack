@@ -1,0 +1,69 @@
+bundle:
+  name: fsi_demo_pack
+
+engine: direct
+
+variables:
+  catalog:
+    description: "Unity Catalog catalog for all demos"
+    default: perdomo_tests_catalog
+  credit_schema:
+    description: "Schema for the Credit Decisioning demo"
+    default: fsi_credit
+  smart_claims_schema:
+    description: "Schema for the Smart Claims demo"
+    default: fsi_smart_claims
+  credit_volume:
+    description: "Volume name for credit raw data"
+    default: credit_raw_data
+  claims_volume:
+    description: "Volume name for claims data"
+    default: volume_claims
+  ml_cluster_id:
+    description: "Cluster ID for ML tasks (managed by the bundle)"
+    default: ""
+  warehouse_id:
+    description: "SQL Warehouse ID for dashboards and Genie spaces"
+    default: ""
+
+workspace:
+  root_path: /Users/${workspace.current_user.userName}/fsi_demo_pack
+
+include:
+  - resources/*.yml
+
+resources:
+  clusters:
+    ml_cluster:
+      cluster_name: "[FSI Demo Pack] ML Cluster"
+      spark_version: "17.3.x-scala2.13"
+      node_type_id: r6id.xlarge
+      driver_node_type_id: r6id.xlarge
+      autoscale:
+        min_workers: 2
+        max_workers: 8
+      aws_attributes:
+        availability: SPOT_WITH_FALLBACK
+      autotermination_minutes: 120
+      runtime_engine: PHOTON
+      data_security_mode: SINGLE_USER
+      single_user_name: ${workspace.current_user.userName}
+
+targets:
+  dev:
+    mode: development
+    default: true
+    variables:
+      catalog: perdomo_tests_catalog
+      ml_cluster_id: ${resources.clusters.ml_cluster.id}
+
+  staging:
+    variables:
+      catalog: ${var.catalog}
+      ml_cluster_id: ${resources.clusters.ml_cluster.id}
+
+  prod:
+    mode: production
+    variables:
+      catalog: ${var.catalog}
+      ml_cluster_id: ${resources.clusters.ml_cluster.id}
