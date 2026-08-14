@@ -21,23 +21,34 @@ One [Databricks Asset Bundle](https://docs.databricks.com/dev-tools/bundles/inde
 
 ## Deploy
 
+**1. Authenticate** (creates a CLI profile named `my-ws`):
 ```bash
-databricks bundle deploy -t dev \
+databricks auth login --host <workspace-url> --profile my-ws
+```
+
+**2. Deploy** — supply your catalog and SQL Warehouse id:
+```bash
+databricks bundle deploy -t dev -p my-ws \
   --var catalog=<your_catalog> \
   --var warehouse_id=<your_sql_warehouse_id>
 ```
-
-**Important:** Genie spaces validate tables at creation time. On a fresh catalog:
-1. Deploy (dashboards/jobs/pipelines deploy; Genie spaces error until data exists)
-2. Run the jobs (populates tables)
-3. Deploy again (creates Genie spaces)
-
-### Run the jobs
-
+On **GCP/Azure**, also pass a cloud node type and disable the AWS attribute:
 ```bash
-databricks bundle run credit_job -t dev --var catalog=<cat> --var warehouse_id=<id>
-databricks bundle run smart_claims_job -t dev --var catalog=<cat> --var warehouse_id=<id>
-databricks bundle run portfolio_assistant_init -t dev --var catalog=<cat> --var warehouse_id=<id>
+# GCP:   ... --var node_type_id=n2-standard-4    --var 'aws_attributes={}'
+# Azure: ... --var node_type_id=Standard_DS3_v2  --var 'aws_attributes={}'
+```
+
+**3. Run the jobs** to populate the tables (catalog/warehouse are baked in at deploy — no vars needed):
+```bash
+databricks bundle run credit_job -t dev -p my-ws
+databricks bundle run smart_claims_job -t dev -p my-ws
+databricks bundle run portfolio_assistant_init -t dev -p my-ws
+```
+
+**4. Deploy again** to create the Genie spaces (they require their tables to exist):
+```bash
+databricks bundle deploy -t dev -p my-ws \
+  --var catalog=<your_catalog> --var warehouse_id=<your_sql_warehouse_id>
 ```
 
 ## Variables
@@ -53,4 +64,13 @@ databricks bundle run portfolio_assistant_init -t dev --var catalog=<cat> --var 
 | `credit_volume` | `credit_raw_data` | Volume for credit raw data |
 | `claims_volume` | `volume_claims` | Volume for claims data |
 
-Deploys on AWS, GCP, and Azure — pass cloud-specific variables as needed.
+**Choosing `node_type_id`** (it's cloud-specific): list valid types with
+`databricks clusters list-node-types -p my-ws`, or use a ~4-vCPU/16–32 GB type:
+
+| Cloud | `node_type_id` | `aws_attributes` |
+|-------|----------------|------------------|
+| AWS   | `r6id.xlarge` (default) | keep default (`ON_DEMAND`) |
+| GCP   | `n2-standard-4` | `--var 'aws_attributes={}'` |
+| Azure | `Standard_DS3_v2` | `--var 'aws_attributes={}'` |
+
+Deploys on AWS, GCP, and Azure — pass the cloud-specific variables above.
