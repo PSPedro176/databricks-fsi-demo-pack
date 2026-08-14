@@ -26,6 +26,11 @@ variables:
   node_type_id:
     description: "ML cluster node type (cloud-specific). AWS default; override for GCP/Azure, e.g. --var node_type_id=n2-highmem-4 (GCP) or Standard_DS4_v2 (Azure)"
     default: r6id.xlarge
+  aws_attributes:
+    description: "AWS-only cluster attributes. Default forces ON_DEMAND (the workspace default is SPOT). On GCP/Azure deploy with --var 'aws_attributes={}'"
+    type: complex
+    default:
+      availability: ON_DEMAND
 
 workspace:
   root_path: /Users/${workspace.current_user.userName}/fsi_demo_pack
@@ -43,6 +48,7 @@ resources:
       autoscale:
         min_workers: 2
         max_workers: 8
+      aws_attributes: ${var.aws_attributes}
       autotermination_minutes: 120
       data_security_mode: SINGLE_USER
       single_user_name: ${workspace.current_user.userName}
