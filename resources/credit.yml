@@ -103,79 +103,6 @@ resources:
               schema: ${var.credit_schema}
               volume_name: ${var.credit_volume}
 
-      environments:
-        - environment_key: serverless_env
-          spec:
-            environment_version: "5"
-
-      permissions:
-        - level: CAN_MANAGE_RUN
-          group_name: users
-
-    # -------------------------------------------------------------------------
-    # Init job: all serverless except batch_scoring (needs ML cluster)
-    # -------------------------------------------------------------------------
-    credit_init_job:
-      name: "[FSI Demo Pack] Credit Decisioning - Init"
-      max_concurrent_runs: 1
-      tasks:
-        - task_key: init_data
-          notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/_resources/00-setup.ipynb
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.credit_schema}
-              volume_name: ${var.credit_volume}
-              reset_all_data: "false"
-
-        - task_key: start_sdp_pipeline
-          depends_on:
-            - task_key: init_data
-          pipeline_task:
-            pipeline_id: ${resources.pipelines.credit_pipeline.id}
-            full_refresh: false
-
-        - task_key: feature_engineering
-          depends_on:
-            - task_key: start_sdp_pipeline
-          notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.1-Feature-Engineering-credit-decisioning.ipynb
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.credit_schema}
-              volume_name: ${var.credit_volume}
-
-        - task_key: automl_model
-          depends_on:
-            - task_key: feature_engineering
-          notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.2-AutoML-credit-decisioning.ipynb
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.credit_schema}
-              volume_name: ${var.credit_volume}
-
-        - task_key: batch_scoring
-          depends_on:
-            - task_key: automl_model
-          existing_cluster_id: ${var.ml_cluster_id}
-          notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.3-Batch-Scoring-credit-decisioning.ipynb
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.credit_schema}
-              volume_name: ${var.credit_volume}
-
-        - task_key: explainability_and_fairness
-          depends_on:
-            - task_key: batch_scoring
-          notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.5-Explainability-and-Fairness-credit-decisioning.ipynb
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.credit_schema}
-              volume_name: ${var.credit_volume}
-
         - task_key: create_ai_functions
           depends_on:
             - task_key: explainability_and_fairness
@@ -185,6 +112,12 @@ resources:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
               volume_name: ${var.credit_volume}
+          environment_key: serverless_env
+
+      environments:
+        - environment_key: serverless_env
+          spec:
+            environment_version: "5"
 
       permissions:
         - level: CAN_MANAGE_RUN
@@ -212,25 +145,25 @@ resources:
           "config": {
             "sample_questions": [
               {
-                "id": "q1_high_risk",
+                "id": "83f88c651d904bc3b39fa0c1511fbf11",
                 "question": [
                   "Which customers have the highest credit risk based on their prediction scores?"
                 ]
               },
               {
-                "id": "q2_overdue",
+                "id": "ae88547320504342a1ec21755334c8ac",
                 "question": [
                   "Show me the total credit overdue amounts by customer"
                 ]
               },
               {
-                "id": "q3_features",
+                "id": "8dd2dec379264f06a788974f686c81d1",
                 "question": [
                   "What are the average tenure and revenue for customers grouped by education level?"
                 ]
               },
               {
-                "id": "q4_transactions",
+                "id": "469607a455d042128406ea1fb28bc576",
                 "question": [
                   "Which customers have the highest transaction volume in the last 12 months?"
                 ]
@@ -240,33 +173,10 @@ resources:
           "data_sources": {
             "tables": [
               {
-                "identifier": "${var.catalog}.fsi_credit.customer_gold",
-                "column_configs": [
-                  {
-                    "column_name": "id"
-                  },
-                  {
-                    "column_name": "first_name"
-                  },
-                  {
-                    "column_name": "last_name"
-                  },
-                  {
-                    "column_name": "email"
-                  },
-                  {
-                    "column_name": "gender"
-                  },
-                  {
-                    "column_name": "city"
-                  }
-                ]
-              },
-              {
                 "identifier": "${var.catalog}.fsi_credit.credit_bureau_gold",
                 "column_configs": [
                   {
-                    "column_name": "CUST_ID"
+                    "column_name": "AMT_CREDIT_MAX_OVERDUE"
                   },
                   {
                     "column_name": "AMT_CREDIT_SUM"
@@ -278,7 +188,7 @@ resources:
                     "column_name": "AMT_CREDIT_SUM_OVERDUE"
                   },
                   {
-                    "column_name": "AMT_CREDIT_MAX_OVERDUE"
+                    "column_name": "CNT_CREDIT_PROLONG"
                   },
                   {
                     "column_name": "CREDIT_ACTIVE"
@@ -287,53 +197,7 @@ resources:
                     "column_name": "CREDIT_DAY_OVERDUE"
                   },
                   {
-                    "column_name": "CNT_CREDIT_PROLONG"
-                  }
-                ]
-              },
-              {
-                "identifier": "${var.catalog}.fsi_credit.fund_trans_gold",
-                "column_configs": [
-                  {
-                    "column_name": "cust_id"
-                  },
-                  {
-                    "column_name": "sent_txn_cnt_12m"
-                  },
-                  {
-                    "column_name": "sent_txn_amt_12m"
-                  },
-                  {
-                    "column_name": "rcvd_txn_cnt_12m"
-                  },
-                  {
-                    "column_name": "rcvd_txn_amt_12m"
-                  },
-                  {
-                    "column_name": "dist_payer_cnt_12m"
-                  },
-                  {
-                    "column_name": "dist_payee_cnt_12m"
-                  }
-                ]
-              },
-              {
-                "identifier": "${var.catalog}.fsi_credit.telco_gold",
-                "column_configs": [
-                  {
-                    "column_name": "cust_id"
-                  },
-                  {
-                    "column_name": "avg_phone_bill_amt_lst12mo"
-                  },
-                  {
-                    "column_name": "number_payment_delays_last12mo"
-                  },
-                  {
-                    "column_name": "phone_bill_amt"
-                  },
-                  {
-                    "column_name": "is_pre_paid"
+                    "column_name": "CUST_ID"
                   }
                 ]
               },
@@ -353,16 +217,85 @@ resources:
                     "column_name": "months_employment"
                   },
                   {
-                    "column_name": "tenure_months"
-                  },
-                  {
                     "column_name": "product_cnt"
                   },
                   {
-                    "column_name": "tot_rel_bal"
+                    "column_name": "revenue_tot"
                   },
                   {
-                    "column_name": "revenue_tot"
+                    "column_name": "tenure_months"
+                  },
+                  {
+                    "column_name": "tot_rel_bal"
+                  }
+                ]
+              },
+              {
+                "identifier": "${var.catalog}.fsi_credit.customer_gold",
+                "column_configs": [
+                  {
+                    "column_name": "city"
+                  },
+                  {
+                    "column_name": "email"
+                  },
+                  {
+                    "column_name": "first_name"
+                  },
+                  {
+                    "column_name": "gender"
+                  },
+                  {
+                    "column_name": "id"
+                  },
+                  {
+                    "column_name": "last_name"
+                  }
+                ]
+              },
+              {
+                "identifier": "${var.catalog}.fsi_credit.fund_trans_gold",
+                "column_configs": [
+                  {
+                    "column_name": "cust_id"
+                  },
+                  {
+                    "column_name": "dist_payee_cnt_12m"
+                  },
+                  {
+                    "column_name": "dist_payer_cnt_12m"
+                  },
+                  {
+                    "column_name": "rcvd_txn_amt_12m"
+                  },
+                  {
+                    "column_name": "rcvd_txn_cnt_12m"
+                  },
+                  {
+                    "column_name": "sent_txn_amt_12m"
+                  },
+                  {
+                    "column_name": "sent_txn_cnt_12m"
+                  }
+                ]
+              },
+              {
+                "identifier": "${var.catalog}.fsi_credit.telco_gold",
+                "column_configs": [
+                  {
+                    "column_name": "avg_phone_bill_amt_lst12mo"
+                  },
+                  {
+                    "column_name": "cust_id"
+                  },
+                  {
+                    "column_name": "is_pre_paid"
+                  },
+                  {
+                    "column_name": "number_payment_delays_last12mo"
+                  },
+                  {
+                    "column_name": "phone_bill_amt"
                   }
                 ]
               },
@@ -376,16 +309,16 @@ resources:
                     "column_name": "education"
                   },
                   {
-                    "column_name": "tenure_months"
-                  },
-                  {
-                    "column_name": "tot_rel_bal"
+                    "column_name": "prediction"
                   },
                   {
                     "column_name": "revenue_tot"
                   },
                   {
-                    "column_name": "prediction"
+                    "column_name": "tenure_months"
+                  },
+                  {
+                    "column_name": "tot_rel_bal"
                   }
                 ]
               }
@@ -394,20 +327,10 @@ resources:
           "instructions": {
             "text_instructions": [
               {
-                "id": "instr_context",
+                "id": "4b19f4a74c0549e48ba3ad0ce1915d69",
                 "content": [
-                  "This Genie space helps analysts explore credit decisioning data. It covers customer profiles, credit bureau history, fund transactions, telco data, engineered features, and model predictions for underbanked customer identification."
-                ]
-              },
-              {
-                "id": "instr_joins",
-                "content": [
-                  "Join tables on customer ID: customer_gold.id = credit_bureau_gold.CUST_ID = fund_trans_gold.cust_id = telco_gold.cust_id = credit_decisioning_features.cust_id = underbanked_prediction.cust_id"
-                ]
-              },
-              {
-                "id": "instr_prediction",
-                "content": [
+                  "This Genie space helps analysts explore credit decisioning data. It covers customer profiles, credit bureau history, fund transactions, telco data, engineered features, and model predictions for underbanked customer identification.",
+                  "Join tables on customer ID: customer_gold.id = credit_bureau_gold.CUST_ID = fund_trans_gold.cust_id = telco_gold.cust_id = credit_decisioning_features.cust_id = underbanked_prediction.cust_id",
                   "The underbanked_prediction table contains the model output. The 'prediction' column indicates whether the customer is predicted to be underbanked (1) or not (0). Use credit_decisioning_features for the input features used by the model."
                 ]
               }
