@@ -1,8 +1,6 @@
 bundle:
   name: fsi_demo_pack
 
-engine: direct
-
 variables:
   catalog:
     description: "Unity Catalog catalog for all demos"
@@ -59,11 +57,9 @@ targets:
 
   staging:
     variables:
-      catalog: ${var.catalog}
       ml_cluster_id: ${resources.clusters.ml_cluster.id}
 
   prod:
     mode: production
     variables:
-      catalog: ${var.catalog}
       ml_cluster_id: ${resources.clusters.ml_cluster.id}

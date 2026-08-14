@@ -1,0 +1,18 @@
+# Rendered dashboard/genie files (produced by deploy.sh from ${var.catalog} templates)
+.build/
+
+# Databricks bundle state / local config
+.databricks/
+*.tfstate
+*.tfstate.*
+
+# Python / notebooks
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Isaac tooling state
+.isaac/

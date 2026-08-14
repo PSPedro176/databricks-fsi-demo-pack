@@ -21,8 +21,27 @@ resources:
         bundle.schema: ${var.credit_schema}
         bundle.volume: ${var.credit_volume}
       libraries:
-        - notebook:
-            path: ../lakehouse-fsi-credit/01-Data-Ingestion/01.1-sdp-sql/transformations
+        - glob:
+            include: ../lakehouse-fsi-credit/01-Data-Ingestion/01.1-sdp-sql/transformations/**
+
+  dashboards:
+    credit_decisioning_dashboard:
+      display_name: "[FSI Demo Pack] - Credit Decisioning"
+      file_path: ../.build/lakehouse-fsi-credit/_dashboards/credit_decisioning.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      permissions:
+        - level: CAN_VIEW
+          group_name: users
+
+  genie_spaces:
+    credit_decisioning_genie:
+      title: "[FSI Demo Pack] - Credit Decisioning"
+      description: "Analyze credit decisioning data with the GenAI Assistant: explore customer profiles, credit bureau data, model explanations and feature definitions through plain-language questions."
+      warehouse_id: ${var.warehouse_id}
+      file_path: ../.build/lakehouse-fsi-credit/_genie_spaces/credit_decisioning.geniespace.json
+      permissions:
+        - level: CAN_RUN
+          group_name: users
 
   jobs:
     # -------------------------------------------------------------------------
@@ -35,7 +54,7 @@ resources:
         - task_key: init_data
           existing_cluster_id: ${var.ml_cluster_id}
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/_resources/01-load-data
+            notebook_path: ../lakehouse-fsi-credit/_resources/01-load-data.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -53,7 +72,7 @@ resources:
             - task_key: start_sdp_pipeline
           existing_cluster_id: ${var.ml_cluster_id}
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.1-Feature-Engineering-credit-decisioning
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.1-Feature-Engineering-credit-decisioning.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -63,7 +82,7 @@ resources:
           depends_on:
             - task_key: feature_engineering
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.2-AutoML-credit-decisioning
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.2-AutoML-credit-decisioning.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -75,7 +94,7 @@ resources:
             - task_key: automl_model
           existing_cluster_id: ${var.ml_cluster_id}
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.3-Batch-Scoring-credit-decisioning
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.3-Batch-Scoring-credit-decisioning.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -86,7 +105,7 @@ resources:
             - task_key: batch_scoring
           existing_cluster_id: ${var.ml_cluster_id}
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.5-Explainability-and-Fairness-credit-decisioning
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.5-Explainability-and-Fairness-credit-decisioning.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -97,7 +116,7 @@ resources:
             - task_key: automl_model
           existing_cluster_id: ${var.ml_cluster_id}
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.5-Explainability-and-Fairness-credit-decisioning
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.4-model-serving-BNPL-credit-decisioning.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -121,7 +140,7 @@ resources:
       tasks:
         - task_key: init_data
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/_resources/00-setup
+            notebook_path: ../lakehouse-fsi-credit/_resources/00-setup.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -139,7 +158,7 @@ resources:
           depends_on:
             - task_key: start_sdp_pipeline
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.1-Feature-Engineering-credit-decisioning
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.1-Feature-Engineering-credit-decisioning.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -149,7 +168,7 @@ resources:
           depends_on:
             - task_key: feature_engineering
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.2-AutoML-credit-decisioning
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.2-AutoML-credit-decisioning.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -160,7 +179,7 @@ resources:
             - task_key: automl_model
           existing_cluster_id: ${var.ml_cluster_id}
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.3-Batch-Scoring-credit-decisioning
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.3-Batch-Scoring-credit-decisioning.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -170,7 +189,7 @@ resources:
           depends_on:
             - task_key: batch_scoring
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.5-Explainability-and-Fairness-credit-decisioning
+            notebook_path: ../lakehouse-fsi-credit/03-Data-Science-ML/03.5-Explainability-and-Fairness-credit-decisioning.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}
@@ -180,7 +199,7 @@ resources:
           depends_on:
             - task_key: explainability_and_fairness
           notebook_task:
-            notebook_path: ../lakehouse-fsi-credit/05-Generative-AI/05.1-AI-Functions-Creation
+            notebook_path: ../lakehouse-fsi-credit/05-Generative-AI/05.1-AI-Functions-Creation.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.credit_schema}

@@ -20,8 +20,25 @@ resources:
         bundle.catalog: ${var.catalog}
         bundle.schema: ${var.smart_claims_schema}
       libraries:
-        - notebook:
-            path: ../lakehouse-fsi-smart-claims/01-Data-Ingestion/transformations
+        - glob:
+            include: ../lakehouse-fsi-smart-claims/01-Data-Ingestion/transformations/**
+
+  dashboards:
+    smart_claims_investigation_dashboard:
+      display_name: "[FSI Demo Pack] - Smart Claims Investigation"
+      file_path: ../.build/lakehouse-fsi-smart-claims/_dashboards/smart_claims_investigation.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      permissions:
+        - level: CAN_VIEW
+          group_name: users
+
+    smart_claims_summary_dashboard:
+      display_name: "[FSI Demo Pack] - Smart Claims Summary Report"
+      file_path: ../.build/lakehouse-fsi-smart-claims/_dashboards/smart_claims_summary_report.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      permissions:
+        - level: CAN_VIEW
+          group_name: users
 
   jobs:
     smart_claims_job:
@@ -31,7 +48,7 @@ resources:
         - task_key: init_data
           existing_cluster_id: ${var.ml_cluster_id}
           notebook_task:
-            notebook_path: ../lakehouse-fsi-smart-claims/_resources/00-setup
+            notebook_path: ../lakehouse-fsi-smart-claims/_resources/00-setup.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.smart_claims_schema}
@@ -49,7 +66,7 @@ resources:
             - task_key: init_data
           existing_cluster_id: ${var.ml_cluster_id}
           notebook_task:
-            notebook_path: ../lakehouse-fsi-smart-claims/02-Data-Science-ML/02.1-Model-Training
+            notebook_path: ../lakehouse-fsi-smart-claims/02-Data-Science-ML/02.1-Model-Training.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.smart_claims_schema}
@@ -61,7 +78,7 @@ resources:
             - task_key: train_model
           existing_cluster_id: ${var.ml_cluster_id}
           notebook_task:
-            notebook_path: ../lakehouse-fsi-smart-claims/02-Data-Science-ML/02.2-Batch-Scoring
+            notebook_path: ../lakehouse-fsi-smart-claims/02-Data-Science-ML/02.2-Batch-Scoring.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.smart_claims_schema}
@@ -72,7 +89,7 @@ resources:
             - task_key: predict_accident_severity
           existing_cluster_id: ${var.ml_cluster_id}
           notebook_task:
-            notebook_path: ../lakehouse-fsi-smart-claims/02-Data-Science-ML/02.3-Dynamic-Rule-Engine
+            notebook_path: ../lakehouse-fsi-smart-claims/02-Data-Science-ML/02.3-Dynamic-Rule-Engine.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.smart_claims_schema}
@@ -82,7 +99,7 @@ resources:
           depends_on:
             - task_key: rule_engine
           notebook_task:
-            notebook_path: ../lakehouse-fsi-smart-claims/04-Generative-AI/04.1-AI-Functions-Creation
+            notebook_path: ../lakehouse-fsi-smart-claims/04-Generative-AI/04.1-AI-Functions-Creation.ipynb
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.smart_claims_schema}
