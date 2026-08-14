@@ -22,9 +22,9 @@ resources:
       libraries:
         - glob:
             include: ../lakehouse-fsi-smart-claims/01-Data-Ingestion/transformations/**
-
-  # The 2 dashboards are defined in resources/dashboards.yml
-  # (inline serialized_dashboard for deploy-time catalog substitution).
+      environment:
+        dependencies:
+          - geopy
 
   jobs:
     smart_claims_job:
@@ -99,4 +99,25 @@ resources:
 
       permissions:
         - level: CAN_MANAGE_RUN
+          group_name: users
+
+  dashboards:
+    smart_claims_investigation_dashboard:
+      display_name: "[FSI Demo Pack] - Smart Claims Investigation"
+      warehouse_id: ${var.warehouse_id}
+      file_path: ../lakehouse-fsi-smart-claims/_dashboards/smart_claims_investigation.lvdash.json
+      dataset_catalog: ${var.catalog}
+      dataset_schema: ${var.smart_claims_schema}
+      permissions:
+        - level: CAN_READ
+          group_name: users
+
+    smart_claims_summary_dashboard:
+      display_name: "[FSI Demo Pack] - Smart Claims Summary Report"
+      warehouse_id: ${var.warehouse_id}
+      file_path: ../lakehouse-fsi-smart-claims/_dashboards/smart_claims_summary_report.lvdash.json
+      dataset_catalog: ${var.catalog}
+      dataset_schema: ${var.smart_claims_schema}
+      permissions:
+        - level: CAN_READ
           group_name: users

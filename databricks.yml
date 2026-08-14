@@ -34,7 +34,7 @@ resources:
   clusters:
     ml_cluster:
       cluster_name: "[FSI Demo Pack] ML Cluster"
-      spark_version: "17.3.x-scala2.13"
+      spark_version: "17.3.x-cpu-ml-photon-scala2.13"
       node_type_id: r6id.xlarge
       driver_node_type_id: r6id.xlarge
       autoscale:
