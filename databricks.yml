@@ -34,7 +34,7 @@ resources:
   clusters:
     ml_cluster:
       cluster_name: "[FSI Demo Pack] ML Cluster"
-      spark_version: "17.3.x-cpu-ml-photon-scala2.13"
+      spark_version: "17.3.x-cpu-ml-scala2.13"
       node_type_id: r6id.xlarge
       driver_node_type_id: r6id.xlarge
       autoscale:
@@ -43,7 +43,6 @@ resources:
       aws_attributes:
         availability: SPOT_WITH_FALLBACK
       autotermination_minutes: 120
-      runtime_engine: PHOTON
       data_security_mode: SINGLE_USER
       single_user_name: ${workspace.current_user.userName}
 
