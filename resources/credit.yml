@@ -24,24 +24,8 @@ resources:
         - glob:
             include: ../lakehouse-fsi-credit/01-Data-Ingestion/01.1-sdp-sql/transformations/**
 
-  dashboards:
-    credit_decisioning_dashboard:
-      display_name: "[FSI Demo Pack] - Credit Decisioning"
-      file_path: ../.build/lakehouse-fsi-credit/_dashboards/credit_decisioning.lvdash.json
-      warehouse_id: ${var.warehouse_id}
-      permissions:
-        - level: CAN_VIEW
-          group_name: users
-
-  genie_spaces:
-    credit_decisioning_genie:
-      title: "[FSI Demo Pack] - Credit Decisioning"
-      description: "Analyze credit decisioning data with the GenAI Assistant: explore customer profiles, credit bureau data, model explanations and feature definitions through plain-language questions."
-      warehouse_id: ${var.warehouse_id}
-      file_path: ../.build/lakehouse-fsi-credit/_genie_spaces/credit_decisioning.geniespace.json
-      permissions:
-        - level: CAN_RUN
-          group_name: users
+  # Dashboard + Genie space are defined in resources/dashboards.yml and
+  # resources/genies.yml (inline serialized_* for deploy-time catalog substitution).
 
   jobs:
     # -------------------------------------------------------------------------

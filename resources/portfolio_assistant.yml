@@ -1,31 +1,13 @@
 # =============================================================================
 # AI/BI Portfolio Assistant
 # =============================================================================
-# Resources: Dashboard + Genie Space (both deployed by bundle)
-# Tables used (schema: fsi_portfolio_assistant):
-#   - portfolio, fundamentals, prices, news, news_ticker
+# Init-data job. The dashboard + Genie space live in resources/dashboards.yml
+# and resources/genies.yml (inline serialized_* so ${var.catalog} is substituted
+# at deploy). Tables (schema: fsi_portfolio_assistant):
+#   portfolio, fundamentals, prices, news, news_ticker
 # =============================================================================
 
 resources:
-  dashboards:
-    portfolio_assistant_dashboard:
-      display_name: "[FSI Demo Pack] - Portfolio Assistant"
-      file_path: ../.build/aibi-portfolio-assistant/_dashboards/portfolio_assistant.lvdash.json
-      warehouse_id: ${var.warehouse_id}
-      permissions:
-        - level: CAN_VIEW
-          group_name: users
-
-  genie_spaces:
-    portfolio_assistant_genie:
-      title: "[FSI Demo Pack] - Portfolio Assistant"
-      description: "Easily analyze your portfolio performance and market trends using the GenAI Assistant. Dive into your data and key financial metrics, and ask plain-language questions through Genie to make smarter, data-driven investment decisions."
-      warehouse_id: ${var.warehouse_id}
-      file_path: ../.build/aibi-portfolio-assistant/_genie_spaces/portfolio_assistant.geniespace.json
-      permissions:
-        - level: CAN_RUN
-          group_name: users
-
   jobs:
     portfolio_assistant_init:
       name: "[FSI Demo Pack] Portfolio Assistant - Init Data"

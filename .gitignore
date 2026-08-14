@@ -1,6 +1,3 @@
-# Rendered dashboard/genie files (produced by deploy.sh from ${var.catalog} templates)
-.build/
-
 # Databricks bundle state / local config
 .databricks/
 *.tfstate

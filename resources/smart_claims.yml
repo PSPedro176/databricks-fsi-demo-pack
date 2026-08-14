@@ -23,22 +23,8 @@ resources:
         - glob:
             include: ../lakehouse-fsi-smart-claims/01-Data-Ingestion/transformations/**
 
-  dashboards:
-    smart_claims_investigation_dashboard:
-      display_name: "[FSI Demo Pack] - Smart Claims Investigation"
-      file_path: ../.build/lakehouse-fsi-smart-claims/_dashboards/smart_claims_investigation.lvdash.json
-      warehouse_id: ${var.warehouse_id}
-      permissions:
-        - level: CAN_VIEW
-          group_name: users
-
-    smart_claims_summary_dashboard:
-      display_name: "[FSI Demo Pack] - Smart Claims Summary Report"
-      file_path: ../.build/lakehouse-fsi-smart-claims/_dashboards/smart_claims_summary_report.lvdash.json
-      warehouse_id: ${var.warehouse_id}
-      permissions:
-        - level: CAN_VIEW
-          group_name: users
+  # The 2 dashboards are defined in resources/dashboards.yml
+  # (inline serialized_dashboard for deploy-time catalog substitution).
 
   jobs:
     smart_claims_job:

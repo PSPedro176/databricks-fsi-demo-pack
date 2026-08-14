@@ -4,7 +4,8 @@ A single [Databricks Asset Bundle](https://docs.databricks.com/dev-tools/bundles
 (`fsi_demo_pack`) that packages three Financial Services (FSI) demos with **centralized
 variables**, a **shared managed ML cluster**, and `dev` / `staging` / `prod` targets.
 
-All demos write to one Unity Catalog catalog (chosen at deploy time), each into its own schema.
+Deploy it into any workspace with a plain `databricks bundle deploy` — the catalog is chosen
+at deploy time and injected everywhere (including dashboards and Genie spaces).
 
 ## The three demos
 
@@ -18,51 +19,46 @@ All demos write to one Unity Catalog catalog (chosen at deploy time), each into 
 
 ## How the catalog is injected (no hard-coded catalogs)
 
-Dashboards (`.lvdash.json`) and Genie spaces (`.geniespace.json`) reference tables using the
-placeholder `${var.catalog}`. Databricks Asset Bundles do **not** substitute variables *inside*
-those JSON files, so [`deploy.sh`](./deploy.sh) renders them into a gitignored `.build/` copy
-with the catalog you choose at deploy time, then runs `databricks bundle deploy`. Nothing in the
-repo is tied to a specific catalog.
+Everything is driven by the `catalog` bundle variable. Job/pipeline parameters use
+`${var.catalog}`, and the dashboards and Genie spaces are stored **inline** as
+`serialized_dashboard` / `serialized_space` fields (in `resources/dashboards.yml` and
+`resources/genies.yml`) so bundle variable substitution rewrites `${var.catalog}` at deploy
+time. (Databricks does not substitute variables inside `file_path`-referenced JSON, which is
+why the content is inline.) Pick the catalog with `--var catalog=...`.
 
 ## Prerequisites
 
 - **Databricks CLI** ≥ v0.230 (`databricks --version`)
 - Authenticated CLI: `databricks auth login --host <workspace-url> --profile <name>`
-- A **Unity Catalog catalog** you can write to
+- An existing **Unity Catalog catalog** you can create schemas in
 - A **SQL Warehouse** (required by all dashboards and Genie spaces)
 - Permission to create clusters, pipelines, jobs, dashboards and Genie spaces
 
 ## Deploy
 
 ```bash
-# ./deploy.sh <catalog> [target] [warehouse_id]
-./deploy.sh my_catalog dev <sql_warehouse_id>
+databricks bundle deploy -t dev \
+  --var catalog=<your_catalog> \
+  --var warehouse_id=<your_sql_warehouse_id>
 ```
 
-Use a specific CLI profile / workspace:
-
-```bash
-DATABRICKS_CONFIG_PROFILE=my_profile ./deploy.sh my_catalog dev <sql_warehouse_id>
-```
-
-`deploy.sh` renders the catalog into `.build/`, validates, then deploys. Targets: `dev`
+Use a specific profile with `-p <profile>` (or `DATABRICKS_CONFIG_PROFILE`). Targets: `dev`
 (default, development mode), `staging`, `prod` (production mode).
 
-> Deploying with a bare `databricks bundle deploy` skips the render step and the dashboards/
-> Genie spaces will contain the literal `${var.catalog}` — always deploy via `./deploy.sh`.
+> **Order note:** Genie spaces validate that their tables exist at creation time. On a brand-new
+> catalog, deploy first (dashboards/jobs/pipelines create fine; the Genie spaces will error
+> until data exists), run the jobs below to populate the tables, then re-run `bundle deploy`
+> to create the Genie spaces.
 
 ## Run the demos
 
-After deploy, run each demo's entrypoint job (pass the same catalog/warehouse vars):
-
 ```bash
-databricks bundle run credit_job            -t dev --var catalog=my_catalog --var warehouse_id=<id>
-databricks bundle run smart_claims_job      -t dev --var catalog=my_catalog --var warehouse_id=<id>
-databricks bundle run portfolio_assistant_init -t dev --var catalog=my_catalog --var warehouse_id=<id>
+databricks bundle run credit_job              -t dev --var catalog=<cat> --var warehouse_id=<id>
+databricks bundle run smart_claims_job        -t dev --var catalog=<cat> --var warehouse_id=<id>
+databricks bundle run portfolio_assistant_init -t dev --var catalog=<cat> --var warehouse_id=<id>
 ```
 
-The jobs create the schemas/volumes and populate the tables the dashboards and Genie spaces
-read from, so run them before opening the dashboards.
+These create the schemas/volumes and populate the tables the dashboards and Genie spaces read.
 
 ## Variables
 
@@ -81,11 +77,12 @@ read from, so run them before opening the dashboards.
 ```
 databricks.yml              # bundle name, variables, shared ML cluster, targets
 resources/
-  credit.yml                # credit pipeline + 2 jobs + 1 dashboard + 1 genie
-  smart_claims.yml          # smart-claims pipeline + job + 2 dashboards
-  portfolio_assistant.yml   # portfolio job + 1 dashboard + 1 genie
-deploy.sh                   # render (${var.catalog} -> catalog) + validate + deploy
-lakehouse-fsi-credit/       # notebooks, SDP transformations, _dashboards/, _genie_spaces/
-lakehouse-fsi-smart-claims/ # notebooks, SDP transformations, _dashboards/
-aibi-portfolio-assistant/   # notebook, _dashboards/, _genie_spaces/
+  credit.yml                # credit pipeline + 2 jobs
+  smart_claims.yml          # smart-claims pipeline + job
+  portfolio_assistant.yml   # portfolio init job
+  dashboards.yml            # 4 dashboards (inline serialized_dashboard)
+  genies.yml                # 2 Genie spaces (inline serialized_space)
+lakehouse-fsi-credit/       # notebooks + SDP transformations
+lakehouse-fsi-smart-claims/ # notebooks + SDP transformations
+aibi-portfolio-assistant/   # notebook
 ```
