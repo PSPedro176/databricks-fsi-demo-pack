@@ -38,6 +38,8 @@ On **GCP/Azure**, also pass a cloud node type and disable the AWS attribute:
 # Azure: ... --var node_type_id=Standard_DS3_v2  --var 'aws_attributes={}'
 ```
 
+> On a fresh catalog, this first deploy **reports errors for the 2 Genie spaces** (their tables don't exist yet) — that's expected. **Don't re-run this deploy**; deploy from a single working copy and just continue to step 3. (Re-running a failed deploy, or deploying from a fresh clone without the prior state, can create duplicate jobs.)
+
 **3. Run the jobs** to populate the tables (catalog/warehouse are baked in at deploy — no vars needed):
 ```bash
 databricks bundle run credit_job -t dev -p my-ws
