@@ -2,6 +2,8 @@
 
 One [Databricks Asset Bundle](https://docs.databricks.com/dev-tools/bundles/index.html) (`fsi_demo_pack`) packaging three Financial Services demos with centralized variables and a shared ML cluster.
 
+> The three demos are adapted from **[dbdemos](https://www.dbdemos.ai)** (Databricks' demo catalog).
+
 ## The three demos
 
 | Demo | Folder | Schema | Key resources |
