@@ -1,0 +1,48 @@
+bundle:
+  name: fsi_demo_pack_bi
+
+# =============================================================================
+# BI bundle — dashboards + Genie spaces for the FSI Demo Pack.
+# Deploy this AFTER the core bundle (repo root) is deployed and its data jobs
+# have run (e.g. `databricks bundle run populate_all_data`), because these BI
+# assets reference tables the jobs create. Kept as a separate bundle (its own
+# state) so it never races the compute/data bundle. See ../README.md.
+# =============================================================================
+
+variables:
+  catalog:
+    description: "Unity Catalog catalog for all demos (must match the core bundle)"
+    default: perdomo_tests_catalog
+  warehouse_id:
+    description: "SQL Warehouse ID for dashboards and Genie spaces (required)"
+    default: ""
+  credit_schema:
+    description: "Schema for the Credit Decisioning demo (must match the core bundle)"
+    default: fsi_credit
+  smart_claims_schema:
+    description: "Schema for the Smart Claims demo (must match the core bundle)"
+    default: fsi_smart_claims
+
+workspace:
+  root_path: /Users/${workspace.current_user.userName}/fsi_demo_pack_bi
+
+# Extend the sync root to the repo root so the dashboard .lvdash.json files (which
+# live under ../lakehouse-fsi-*/_dashboards/) are inside the sync root.
+sync:
+  paths:
+    - ..
+
+include:
+  - resources/*.yml
+
+targets:
+  dev:
+    mode: development
+    default: true
+    variables:
+      catalog: perdomo_tests_catalog
+
+  staging: {}
+
+  prod:
+    mode: production

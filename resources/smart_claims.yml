@@ -101,23 +101,6 @@ resources:
         - level: CAN_MANAGE_RUN
           group_name: users
 
-  dashboards:
-    smart_claims_investigation_dashboard:
-      display_name: "[FSI Demo Pack] - Smart Claims Investigation"
-      warehouse_id: ${var.warehouse_id}
-      file_path: ../lakehouse-fsi-smart-claims/_dashboards/smart_claims_investigation.lvdash.json
-      dataset_catalog: ${var.catalog}
-      dataset_schema: ${var.smart_claims_schema}
-      permissions:
-        - level: CAN_READ
-          group_name: users
-
-    smart_claims_summary_dashboard:
-      display_name: "[FSI Demo Pack] - Smart Claims Summary Report"
-      warehouse_id: ${var.warehouse_id}
-      file_path: ../lakehouse-fsi-smart-claims/_dashboards/smart_claims_summary_report.lvdash.json
-      dataset_catalog: ${var.catalog}
-      dataset_schema: ${var.smart_claims_schema}
-      permissions:
-        - level: CAN_READ
-          group_name: users
+# The dashboards for this demo live in the separate BI bundle
+# (resources-aibi/resources/smart_claims_bi.yml). They depend on tables this bundle's job
+# creates, so they are deployed after the data exists. See README.

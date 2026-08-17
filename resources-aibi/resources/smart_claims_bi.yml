@@ -1,0 +1,28 @@
+# =============================================================================
+# BI bundle - Smart Claims: dashboards
+# =============================================================================
+# Deployed by the BI bundle AFTER the core bundle's smart_claims_job has created
+# the tables (catalog.fsi_smart_claims.*). This demo has no Genie space.
+# =============================================================================
+
+resources:
+  dashboards:
+    smart_claims_investigation_dashboard:
+      display_name: "[FSI Demo Pack] - Smart Claims Investigation"
+      warehouse_id: ${var.warehouse_id}
+      file_path: ../../lakehouse-fsi-smart-claims/_dashboards/smart_claims_investigation.lvdash.json
+      dataset_catalog: ${var.catalog}
+      dataset_schema: ${var.smart_claims_schema}
+      permissions:
+        - level: CAN_READ
+          group_name: users
+
+    smart_claims_summary_dashboard:
+      display_name: "[FSI Demo Pack] - Smart Claims Summary Report"
+      warehouse_id: ${var.warehouse_id}
+      file_path: ../../lakehouse-fsi-smart-claims/_dashboards/smart_claims_summary_report.lvdash.json
+      dataset_catalog: ${var.catalog}
+      dataset_schema: ${var.smart_claims_schema}
+      permissions:
+        - level: CAN_READ
+          group_name: users
