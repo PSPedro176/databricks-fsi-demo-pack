@@ -11,8 +11,7 @@ bundle:
 
 variables:
   catalog:
-    description: "Unity Catalog catalog for all demos (must match the core bundle)"
-    default: perdomo_tests_catalog
+    description: "Unity Catalog catalog for all demos (required; must match the core bundle)"
   warehouse_id:
     description: "SQL Warehouse ID for dashboards and Genie spaces (required)"
     default: ""
@@ -39,8 +38,6 @@ targets:
   dev:
     mode: development
     default: true
-    variables:
-      catalog: perdomo_tests_catalog
 
   staging: {}
 

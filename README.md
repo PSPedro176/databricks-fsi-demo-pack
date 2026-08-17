@@ -5,7 +5,7 @@ Two [Databricks Asset Bundles](https://docs.databricks.com/dev-tools/bundles/ind
 - **`fsi_demo_pack`** (repo root) — the **core** bundle: compute, pipelines, and the data jobs.
 - **`fsi_demo_pack_bi`** (`resources-aibi/`) — the **BI** bundle: dashboards + Genie spaces.
 
-They're split because the BI assets reference tables the data jobs create. Deploying them as one bundle on a fresh catalog fails Genie-space validation (the tables don't exist yet). Splitting into two bundles with independent state gives a clean, ordered flow — **deploy core → run jobs → deploy BI** — with no errors and no risk of duplicate jobs.
+They're split because the BI assets reference tables the data jobs create.
 
 > The three demos are adapted from **[dbdemos](https://www.dbdemos.ai)** (Databricks' demo catalog).
 
@@ -18,7 +18,6 @@ They're split because the BI assets reference tables the data jobs create. Deplo
 | **AI/BI Portfolio Assistant** — portfolio analytics via AI/BI dashboard and Genie space | `aibi-portfolio-assistant/` | `fsi_portfolio_assistant` | 1 job · 1 dashboard · 1 Genie space |
 
 **Total:** 4 data jobs (+1 orchestrator) · 2 pipelines · 4 dashboards · 2 Genie spaces · 1 shared ML cluster.
-The dashboards + Genie spaces live in the **BI** bundle (`resources-aibi/`); everything else lives in the **core** bundle (repo root).
 
 ## Prerequisites
 
@@ -66,7 +65,7 @@ databricks bundle deploy -t dev -p my-ws \
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `catalog` | `perdomo_tests_catalog` | UC catalog for all demos |
+| `catalog` | *(none — **required**)* | UC catalog for all demos |
 | `node_type_id` | `r6id.xlarge` | ML cluster node type (override per cloud) |
 | `aws_attributes` | `{availability: ON_DEMAND}` | AWS-only; set `{}` on GCP/Azure |
 | `credit_schema` | `fsi_credit` | Schema for Credit Decisioning |
@@ -78,7 +77,7 @@ databricks bundle deploy -t dev -p my-ws \
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `catalog` | `perdomo_tests_catalog` | UC catalog — **must match** the core bundle |
+| `catalog` | *(none — **required**)* | UC catalog — **must match** the core bundle |
 | `warehouse_id` | *(empty)* | SQL Warehouse for dashboards & Genie spaces (**required**) |
 | `credit_schema` | `fsi_credit` | Must match the core bundle |
 | `smart_claims_schema` | `fsi_smart_claims` | Must match the core bundle |
