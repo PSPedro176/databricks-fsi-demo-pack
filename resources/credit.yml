@@ -1,7 +1,7 @@
 # =============================================================================
 # Lakehouse FSI - Credit Decisioning
 # =============================================================================
-# Pipeline SDP (serverless, photon, advanced) + 2 Jobs
+# Pipeline SDP (serverless, photon, advanced) + 1 Job
 # Tables: catalog.fsi_credit.*
 # =============================================================================
 

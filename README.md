@@ -13,11 +13,11 @@ They're split because the BI assets reference tables the data jobs create.
 
 | Demo | Folder | Schema | Key resources |
 |------|--------|--------|---------------|
-| **Credit Decisioning** — BNPL credit scoring: ingestion → AutoML → batch scoring → model serving → GenAI functions | `lakehouse-fsi-credit/` | `fsi_credit` | 2 jobs · 1 pipeline · 1 dashboard · 1 Genie space |
+| **Credit Decisioning** — BNPL credit scoring: ingestion → AutoML → batch scoring → model serving → GenAI functions | `lakehouse-fsi-credit/` | `fsi_credit` | 1 job · 1 pipeline · 1 dashboard · 1 Genie space |
 | **Smart Claims** — insurance claims automation: ingestion → severity model → batch scoring → GenAI functions | `lakehouse-fsi-smart-claims/` | `fsi_smart_claims` | 1 job · 1 pipeline · 2 dashboards |
 | **AI/BI Portfolio Assistant** — portfolio analytics via AI/BI dashboard and Genie space | `aibi-portfolio-assistant/` | `fsi_portfolio_assistant` | 1 job · 1 dashboard · 1 Genie space |
 
-**Total:** 4 data jobs (+1 orchestrator) · 2 pipelines · 4 dashboards · 2 Genie spaces · 1 shared ML cluster.
+**Total:** 3 data jobs (+1 orchestrator) · 2 pipelines · 4 dashboards · 2 Genie spaces · 1 shared ML cluster.
 
 ## Prerequisites
 

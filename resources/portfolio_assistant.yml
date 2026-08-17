@@ -1,9 +1,9 @@
 # =============================================================================
 # AI/BI Portfolio Assistant
 # =============================================================================
-# Init-data job only. The dashboard + Genie space live in the separate "bi"
-# bundle (resources-aibi/resources/portfolio_bi.yml) and deploy after this job creates the
-# tables (schema: fsi_portfolio_assistant). See README.
+# Init-data job only. The dashboard + Genie space live in the separate BI bundle
+# (resources-aibi/resources/portfolio_bi.yml) and deploy after this job creates
+# the tables (schema: fsi_portfolio_assistant). See README.
 # =============================================================================
 
 resources:
