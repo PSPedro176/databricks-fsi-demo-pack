@@ -13,8 +13,7 @@ variables:
   catalog:
     description: "Unity Catalog catalog for all demos (required; must match the core bundle)"
   warehouse_id:
-    description: "SQL Warehouse ID for dashboards and Genie spaces (required)"
-    default: ""
+    description: "SQL Warehouse ID for dashboards and Genie spaces (required; pass --var warehouse_id=<id>)"
   credit_schema:
     description: "Schema for the Credit Decisioning demo (must match the core bundle)"
     default: fsi_credit

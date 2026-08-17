@@ -19,9 +19,6 @@ variables:
   ml_cluster_id:
     description: "Cluster ID for ML tasks (managed by the bundle)"
     default: ""
-  warehouse_id:
-    description: "SQL Warehouse ID for dashboards and Genie spaces"
-    default: ""
   node_type_id:
     description: "ML cluster node type (cloud-specific). AWS default; override for GCP/Azure, e.g. --var node_type_id=n2-highmem-4 (GCP) or Standard_DS4_v2 (Azure)"
     default: r6id.xlarge

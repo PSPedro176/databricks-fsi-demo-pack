@@ -78,7 +78,7 @@ databricks bundle deploy -t dev -p my-ws \
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `catalog` | *(none — **required**)* | UC catalog — **must match** the core bundle |
-| `warehouse_id` | *(empty)* | SQL Warehouse for dashboards & Genie spaces (**required**) |
+| `warehouse_id` | *(none — **required**)* | SQL Warehouse for dashboards & Genie spaces |
 | `credit_schema` | `fsi_credit` | Must match the core bundle |
 | `smart_claims_schema` | `fsi_smart_claims` | Must match the core bundle |
 
